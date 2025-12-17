@@ -2,47 +2,53 @@ pipeline {
     agent any
 
     environment {
-        DOCKERHUB_CREDENTIALS = credentials('dockerhub-user-pass')
-        IMAGE_NAME = "shofiqul12/myapp-day-20"
+        DOCKER_IMAGE = 'shofiqul12/myapp-day-20:latest'
+        DOCKERHUB_CREDENTIALS = 'dockerhub-cred-id' // আপনার credentials ID
     }
 
     stages {
 
-        stage('Clone Code') {
+        stage('Checkout Code') {
             steps {
-                git branch: 'main', url: 'https://github.com/shofiqul12/day20.git'
+                checkout scm
             }
         }
 
         stage('Build Docker Image') {
+            agent {
+                docker { image 'docker:24.0.0-cli' }
+            }
             steps {
-                sh "docker build -t ${IMAGE_NAME}:latest ."
+                sh 'docker build -t $DOCKER_IMAGE .'
             }
         }
 
         stage('Push to DockerHub') {
+            agent {
+                docker { image 'docker:24.0.0-cli' }
+            }
             steps {
-                sh """
-                echo ${DOCKERHUB_CREDENTIALS_PSW} | docker login -u ${DOCKERHUB_CREDENTIALS_USR} --password-stdin
-                docker push ${IMAGE_NAME}:latest
-                """
+                withCredentials([usernamePassword(credentialsId: "$DOCKERHUB_CREDENTIALS", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    sh 'docker push $DOCKER_IMAGE'
+                }
             }
         }
 
         stage('Deploy') {
             steps {
-                echo 'Deploying container...'
-                // Option 1: Docker run
-                // sh "docker run -d -p 8080:80 ${IMAGE_NAME}:latest"
-                
-                // Option 2: Kubernetes deploy (if configured)
+                echo "Deploy stage: আপনার সার্ভারে push করা Docker image deploy করুন"
+                // এখানে আপনি SSH, kubectl, বা docker run commands ব্যবহার করতে পারেন
             }
         }
     }
 
     post {
-        always {
-            echo "Job ${env.JOB_NAME} #${env.BUILD_NUMBER} finished with status: ${currentBuild.currentResult}"
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Check logs for errors.'
         }
     }
 }
