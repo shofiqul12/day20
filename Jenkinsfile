@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'shofiqul12/myapp-day-20:latest'
-        DOCKERHUB_CREDENTIALS = 'dockerhub-cred-id' // আপনার credentials ID
+        DOCKERHUB_CREDENTIALS = 'dockerhub-user-pass' // আপনার credentials ID
     }
 
     stages {
