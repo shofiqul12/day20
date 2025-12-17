@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -33,8 +32,17 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying container...'
-                // Docker run or Kubernetes deployment commands here
+                // Option 1: Docker run
+                // sh "docker run -d -p 8080:80 ${IMAGE_NAME}:latest"
+                
+                // Option 2: Kubernetes deploy (if configured)
             }
+        }
+    }
+
+    post {
+        always {
+            echo "Job ${env.JOB_NAME} #${env.BUILD_NUMBER} finished with status: ${currentBuild.currentResult}"
         }
     }
 }
